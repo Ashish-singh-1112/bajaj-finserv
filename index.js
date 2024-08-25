@@ -1,64 +1,59 @@
 const express = require('express');
-const cors = require('cors');
+const bodyParser = require('body-parser');
 const app = express();
-
-// Middleware to parse JSON bodies
-app.use(express.json());
+const port = process.env.PORT || 3000;
+app.use(bodyParser.json());
+const cors = require('cors');
 app.use(cors());
-
-// Utility function to format the user_id
-const formatUserId = (fullName, dob) => {
-    const formattedName = fullName.toLowerCase().replace(/ /g, '_');
-    const formattedDob = dob.split('-').reverse().join(''); // Assuming dob is in dd-mm-yyyy format
-    return `${formattedName}_${formattedDob}`;
-};
-
-// POST endpoint
 app.post('/bfhl', (req, res) => {
-    try {
-        const { data } = req.body;
-        console.log(data);
-
-        // Validate input
-        if (!data || !Array.isArray(data)) {
-            return res.status(400).json({ is_success: false, message: "Invalid input data" });
-        }
-
-        // Separate numbers and alphabets
-        const numbersArray = data.filter(item => !isNaN(item));
-        const alphabetsArray = data.filter(item => isNaN(item));
-
-        // Extract lowercase alphabets
-        const lowercaseAlphabets = alphabetsArray.filter(char => char >= 'a' && char <= 'z');
-
-        // Get the highest lowercase alphabet
-        const highestLowercaseAlphabet = lowercaseAlphabets.length > 0 ? 
-                                          [lowercaseAlphabets.sort().reverse()[0]] : [];
-
-        // Response object
-        const response = {
-            is_success: true,
-            user_id: "Ashish_singh_10072002",  // Replace with actual user_id generation logic
-            email: "as8239613@gmail.com",  // Replace with actual email from input or logic
-            roll_number: "21BPS1497",  // Replace with actual roll number from input or logic
-            numbers: numbersArray,
-            alphabets: alphabetsArray,
-            highest_lowercase_alphabet: highestLowercaseAlphabet
-        };
-
-        res.status(200).json(response);
-    } catch (error) {
-        res.status(500).json({ is_success: false, message: "Server error" });
+    const { data } = req.body;
+    console.log(data);
+    if (!data) {
+        return res.status(400).json({
+            is_success: false,
+            user_id: "Ashish_singh_10072002",  // Use your format here
+            email: "as8239613@gmail.com",
+            roll_number: "21BPS1497",
+            message: "Invalid data input"
+        });
     }
+
+    let numbers = [];
+    let alphabets = [];
+    let highestLowercaseAlphabet = "";
+
+    data.forEach(item => {
+        if (!isNaN(item)) {
+            numbers.push(item);
+        } else if (/[a-zA-Z]/.test(item)) {
+            alphabets.push(item);
+            if (/[a-z]/.test(item)) {
+                if (highestLowercaseAlphabet === "" || item > highestLowercaseAlphabet) {
+                    highestLowercaseAlphabet = item;
+                }
+            }
+        }
+    });
+
+    res.status(200).json({
+        is_success: true,
+        user_id: "Ashish_singh_10072002",  // Use your format here
+        email: "as8239613@gmail.com",
+        roll_number: "21BPS1497",
+        numbers: numbers,
+        alphabets: alphabets,
+        highest_lowercase_alphabet: highestLowercaseAlphabet ? [highestLowercaseAlphabet] : []
+    });
 });
 
-// GET endpoint
+// GET Route: /bfhl
 app.get('/bfhl', (req, res) => {
-    res.status(200).json({ operation_code: 1234 });
+    res.status(200).json({
+        operation_code: 1
+    });
 });
 
 // Start the server
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
 });
