@@ -15,6 +15,7 @@ const formatUserId = (fullName, dob) => {
 app.post('/bfhl', (req, res) => {
     try {
         const { data } = req.body;
+        console.log(data);
 
         // Validate input
         if (!data || !Array.isArray(data)) {
